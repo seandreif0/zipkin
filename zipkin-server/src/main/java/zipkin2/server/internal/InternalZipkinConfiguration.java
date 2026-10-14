@@ -14,6 +14,7 @@ import zipkin2.server.internal.eureka.ZipkinEurekaDiscoveryConfiguration;
 import zipkin2.server.internal.health.ZipkinHealthController;
 import zipkin2.server.internal.kafka.ZipkinKafkaCollectorConfiguration;
 import zipkin2.server.internal.mysql.ZipkinMySQLStorageConfiguration;
+import zipkin2.server.internal.redis.ZipkinRedisStorageConfiguration;
 import zipkin2.server.internal.prometheus.ZipkinMetricsController;
 import zipkin2.server.internal.prometheus.ZipkinPrometheusMetricsConfiguration;
 import zipkin2.server.internal.pulsar.ZipkinPulsarCollectorConfiguration;
@@ -29,6 +30,7 @@ import zipkin2.server.internal.ui.ZipkinUiConfiguration;
   ZipkinCassandra3StorageConfiguration.class,
   ZipkinElasticsearchStorageConfiguration.class,
   ZipkinMySQLStorageConfiguration.class,
+  ZipkinRedisStorageConfiguration.class,
   ZipkinScribeCollectorConfiguration.class,
   ZipkinSelfTracingConfiguration.class,
   ZipkinQueryApiV2.class,

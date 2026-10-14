@@ -26,7 +26,7 @@ usually means configuration of a [tracer or instrumentation library](https://zip
 popular ways to report data to Zipkin are via http or Kafka, though many other
 options exist, such as Apache ActiveMQ, gRPC, RabbitMQ and Apache Pulsar. The data served to
 the UI is stored in-memory, or persistently with a supported backend such as
-Apache Cassandra or Elasticsearch.
+Apache Cassandra, Elasticsearch or Redis.
 
 ## Quick-start
 
@@ -157,6 +157,15 @@ straightforward. To help with scale, this uses a combination of custom
 and manually implemented indexing.
 
 Note: This store requires a [spark job](https://github.com/openzipkin/zipkin-dependencies) to aggregate dependency links.
+
+### Redis
+The [Redis](zipkin-server#redis-storage) component is tested against Redis 7.4.
+
+It stores spans as Zipkin v2 json in a set per trace, with sorted-set
+indexes for search. Data expires after a configurable TTL, which makes it
+a good fit for short retention with low operational overhead.
+
+This store does not require a [job to aggregate](https://github.com/openzipkin/zipkin-dependencies) dependency links.
 
 ### Disabling search
 The following API endpoints provide search features, and are enabled by
