@@ -1,0 +1,37 @@
+#
+# Copyright The OpenZipkin Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# This runs the zipkin and redis containers, using docker-compose's
+# default networking to wire the containers together.
+#
+# Note that this file is meant for learning Zipkin, not production deployments.
+
+
+services:
+  storage:
+    image: redis:7.4-alpine
+    container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 5s
+      start_period: 30s
+    # Uncomment to expose the storage port for testing
+    # ports:
+    #   - 6379:6379
+
+  # Use Redis instead of in-memory storage
+  zipkin:
+    extends:
+      file: docker-compose.yml
+      service: zipkin
+    # slim doesn't include Redis support, so switch to the larger image
+    image: ghcr.io/openzipkin/zipkin:${TAG:-latest}
+    environment:
+      - STORAGE_TYPE=redis
+      - REDIS_HOST=storage
+    depends_on:
+      storage:
+        condition: service_healthy

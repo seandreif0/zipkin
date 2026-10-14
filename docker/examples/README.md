@@ -103,6 +103,18 @@ To start the MySQL-backed configuration, run:
 $ docker compose -f docker-compose-mysql.yml up
 ```
 
+## Redis
+
+You can store traces in [Redis](../../zipkin-storage/redis/README.md) instead of memory, using the
+`docker-compose-redis.yml` file. This configuration starts `zipkin` and `redis` in their own
+containers.
+
+To start the Redis-backed configuration, run:
+
+```bash
+$ docker compose -f docker-compose-redis.yml up
+```
+
 ## RabbitMQ
 
 You can collect traces from [RabbitMQ](../test-images/zipkin-rabbitmq/README.md) in addition to HTTP, using the
