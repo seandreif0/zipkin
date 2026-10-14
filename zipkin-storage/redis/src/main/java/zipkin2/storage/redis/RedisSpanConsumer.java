@@ -39,7 +39,9 @@ final class RedisSpanConsumer implements SpanConsumer {
     this.autocompleteKeys = storage.autocompleteKeys;
     this.ttl = storage.ttl;
     this.delayLimiter = DelayLimiter.newBuilder()
-      .ttl(storage.autocompleteTtl, TimeUnit.MILLISECONDS)
+      // Re-add names before their Redis keys expire
+      .ttl(ttl > 0 ? Math.min(storage.autocompleteTtl, ttl * 1000L) : storage.autocompleteTtl,
+        TimeUnit.MILLISECONDS)
       .cardinality(storage.autocompleteCardinality).build();
   }
 
@@ -54,7 +56,7 @@ final class RedisSpanConsumer implements SpanConsumer {
 
   void store(UnifiedJedis jedis, List<Span> spans) {
     Set<String> expiring = new LinkedHashSet<>(), trimmed = new LinkedHashSet<>();
-    Set<String> durationIndexes = new LinkedHashSet<>();
+    Map<String, Long> durationIndexes = new LinkedHashMap<>();
     Map<String, Set<String>> names = new LinkedHashMap<>();
     List<Map.Entry<String, String>> limited = new ArrayList<>();
     try (AbstractPipeline pipeline = jedis.pipelined()) {
@@ -92,10 +94,13 @@ final class RedisSpanConsumer implements SpanConsumer {
         long duration = span.durationAsLong();
         if (duration != 0L) {
           long epochDay = timestamp / DAY_MICROS;
-          zadd(pipeline, durationIndexes, keys.durationIndex(null, epochDay), duration, member);
+          String key = keys.durationIndex(null, epochDay);
+          pipeline.zadd(key, duration, member);
+          durationIndexes.put(key, epochDay);
           if (serviceName != null) {
-            zadd(pipeline, durationIndexes, keys.durationIndex(serviceName, epochDay), duration,
-              member);
+            key = keys.durationIndex(serviceName, epochDay);
+            pipeline.zadd(key, duration, member);
+            durationIndexes.put(key, epochDay);
           }
         }
 
@@ -126,9 +131,11 @@ final class RedisSpanConsumer implements SpanConsumer {
           pipeline.expire(key, ttl);
         }
         for (String key : expiring) pipeline.expire(key, ttl);
-        // A bucket holds a day of data, so keep it until its last entry expires
-        long durationTtl = ttl + TimeUnit.DAYS.toSeconds(1);
-        for (String key : durationIndexes) pipeline.expire(key, durationTtl);
+        // A bucket holds a day of data, so expire it with its last entry, even when backfilled
+        for (Map.Entry<String, Long> entry : durationIndexes.entrySet()) {
+          long dayEnd = TimeUnit.DAYS.toSeconds(entry.getValue() + 1);
+          pipeline.expireAt(entry.getKey(), dayEnd + ttl);
+        }
       }
       pipeline.sync();
     } catch (RuntimeException e) {

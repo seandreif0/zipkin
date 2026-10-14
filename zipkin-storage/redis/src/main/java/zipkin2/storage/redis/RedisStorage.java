@@ -209,6 +209,7 @@ public final class RedisStorage extends StorageComponent {
     if (closeCalled) throw new ClosedComponentException();
     if (jedis == null) {
       synchronized (this) {
+        if (closeCalled) throw new ClosedComponentException();
         if (jedis == null) jedis = newJedis();
       }
     }
@@ -324,10 +325,13 @@ public final class RedisStorage extends StorageComponent {
       + ", keyPrefix=" + keyPrefix + "}";
   }
 
+  /** Bounds async backlog so a slow Redis rejects calls instead of exhausting the heap. */
+  static final int MAX_QUEUED_CALLS = 1000;
+
   static ExecutorService newExecutor(int threads) {
     AtomicInteger count = new AtomicInteger();
     ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 60, TimeUnit.SECONDS,
-      new LinkedBlockingQueue<>(), r -> {
+      new LinkedBlockingQueue<>(MAX_QUEUED_CALLS), r -> {
       Thread thread = new Thread(r, "zipkin-redis-" + count.incrementAndGet());
       thread.setDaemon(true);
       return thread;
