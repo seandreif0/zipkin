@@ -71,6 +71,7 @@
     -->
     <mariadb-java-client.version>3.5.7</mariadb-java-client.version>
     <HikariCP.version>6.3.3</HikariCP.version>
+    <jedis.version>5.2.0</jedis.version>
     <slf4j.version>2.0.17</slf4j.version>
     <auto-value.version>1.11.1</auto-value.version>
     <git-commit-id.version>9.0.2</git-commit-id.version>

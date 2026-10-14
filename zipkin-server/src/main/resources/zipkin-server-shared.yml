@@ -173,6 +173,20 @@ zipkin:
       db: ${MYSQL_DB:zipkin}
       max-active: ${MYSQL_MAX_CONNECTIONS:10}
       use-ssl: ${MYSQL_USE_SSL:false}
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
+      db: ${REDIS_DB:0}
+      # Seconds to retain trace data and indexes after their last write. 0 disables expiry.
+      ttl: ${REDIS_TTL:604800}
+      # Connect and read timeout in milliseconds
+      timeout: ${REDIS_TIMEOUT:2000}
+      max-active: ${REDIS_MAX_ACTIVE:8}
+      max-idle: ${REDIS_MAX_IDLE:8}
+      min-idle: ${REDIS_MIN_IDLE:0}
+      use-ssl: ${REDIS_USE_SSL:false}
   ui:
     enabled: ${UI_ENABLED:${QUERY_ENABLED:true}}
     ## Values below here are mapped to ZipkinUiProperties, served as /config.json

@@ -144,7 +144,7 @@ A value of 0 will disable the timeout completely. Defaults to 11s.
 * `QUERY_NAMES_MAX_AGE`: Controls the value of the `max-age` header zipkin-server responds with on
  http requests for autocompleted values in the UI (service names for example). Defaults to 300 seconds.
 * `QUERY_LOOKBACK`: How many milliseconds queries can look back from endTs; Defaults to 24 hours (two daily buckets: one for today and one for yesterday)
-* `STORAGE_TYPE`: SpanStore implementation: one of `mem`, `mysql`, `cassandra3`, `elasticsearch`
+* `STORAGE_TYPE`: SpanStore implementation: one of `mem`, `mysql`, `cassandra3`, `elasticsearch`, `redis`
 * `COLLECTOR_SAMPLE_RATE`: Percentage of traces to retain, defaults to always sample (1.0).
 * `AUTOCOMPLETE_KEYS`: list of span tag keys which will be returned by the `/api/v2/autocompleteTags` endpoint; Tag keys should be comma separated e.g. "instance_id,user_id,env"
 * `AUTOCOMPLETE_TTL`: How long in milliseconds to suppress calls to write the same autocomplete key/value pair. Default 3600000 (1 hr)
@@ -334,6 +334,30 @@ customization, please make a comment in [this issue](https://github.com/openzipk
 
 #### Automatic Index Creation
 Zipkin will automatically create new indices as needed. Elasticsearch / OpenSearch by default [allows](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html#index-creation) automatic creation of said indices, though your local install may have been configured to disallow it. You can verify this in the cluster settings: `action.auto_create_index: false`.
+
+### Redis Storage
+Zipkin's [Redis component](../zipkin-storage/redis) is tested against Redis 7 and applies when
+`STORAGE_TYPE` is set to `redis`:
+
+    * `REDIS_HOST`: Defaults to localhost
+    * `REDIS_PORT`: Defaults to 6379
+    * `REDIS_USERNAME` and `REDIS_PASSWORD`: Redis authentication (ACL user and password), which defaults to empty string.
+    * `REDIS_DB`: The logical database index to use. Defaults to 0.
+    * `REDIS_TTL`: Seconds to retain trace data and indexes after their last write. 0 disables expiry. Defaults to 604800 (7 days)
+    * `REDIS_TIMEOUT`: Connect and read timeout in milliseconds. Defaults to 2000
+    * `REDIS_MAX_ACTIVE`: Maximum pooled connections. Defaults to 8
+    * `REDIS_MAX_IDLE`: Maximum idle pooled connections. Defaults to 8
+    * `REDIS_MIN_IDLE`: Minimum idle pooled connections. Defaults to 0
+    * `REDIS_USE_SSL`: Connect using TLS. Defaults to false
+
+Dependency links are aggregated on read from stored traces, so no separate
+[zipkin-dependencies](https://github.com/openzipkin/zipkin-dependencies) job is needed.
+
+Example usage:
+
+```bash
+$ STORAGE_TYPE=redis REDIS_HOST=myhost java -jar zipkin.jar
+```
 
 ### Legacy (v1) storage components
 The following components are no longer encouraged, but exist to help aid
