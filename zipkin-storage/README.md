@@ -13,3 +13,9 @@ are strong, choices may be dropped over time.
 Storage modules ending in `-v1` are discouraged for new sites as they
 use an older data model. At some point in the future, we will stop
 publishing v1 storage options.
+
+## Modules
+* [cassandra](cassandra): Apache Cassandra 3.11.3+ using the v2 data model
+* [elasticsearch](elasticsearch): Elasticsearch 7-8.x and OpenSearch 2.x
+* [mysql-v1](mysql-v1): MySQL 5.6+ (MariaDB) using the v1 data model
+* [redis](redis): Redis 7.2+ with TTL-based retention and on-demand dependency links
